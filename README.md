@@ -1,39 +1,39 @@
 # zcode-bynara-plugin
 
-Koleksi plugin [ZCode](https://zcode.ai) untuk Bynara API (`api-images.bynara.id`): generate gambar dan video langsung dari dalam ZCode.
+A collection of [ZCode](https://zcode.ai) plugins for the Bynara API (`api-images.bynara.id`): generate images and videos directly from ZCode.
 
-## Isi marketplace
+## Marketplace contents
 
-| Plugin | Versi | Fungsi |
+| Plugin | Version | What it does |
 |---|---|---|
-| `bynara-image-generate` | 0.1.2 | Generate gambar dari teks atau edit gambar yang ada (`agnes-image-2.1-flash`, `agnes-image-2.0-flash`, `gpt-image-2`) |
-| `bynara-video-generate` | 0.1.0 | Generate video MP4 pendek — text-to-video (**t2v**), image-to-video (**i2v**, gambar jadi frame pertama), reference-to-video (**r2v**, 1–3 gambar referensi digabung jadi scene baru) dengan `agnes-video-v2.0` |
+| `bynara-image-generate` | 0.1.2 | Generate images from a text prompt or edit existing images (`agnes-image-2.1-flash`, `agnes-image-2.0-flash`, `gpt-image-2`) |
+| `bynara-video-generate` | 0.1.0 | Generate short MP4 clips — text-to-video (**t2v**), image-to-video (**i2v**, the image becomes the first frame), reference-to-video (**r2v**, 1–3 reference images merged into a new scene) — with `agnes-video-v2.0` |
 
-## Instalasi
+## Installation
 
-1. Di ZCode buka **Plugin Marketplace → Add → Add Plugin Marketplace**, lalu tempel path folder ini.
-2. Pilih marketplace **zcode-bynara-plugin**, lalu **Install** plugin yang diinginkan.
-3. Set API key Bynara, lalu restart ZCode:
+1. In ZCode, open **Plugin Marketplace → Add → Add Plugin Marketplace** and paste this folder's path.
+2. Pick the **zcode-bynara-plugin** marketplace, then **Install** the plugins you want.
+3. Set your Bynara API key, then restart ZCode:
 
    ```
    setx __BYNARA_API_KEY "sk-nry-..."
    ```
 
-   Jangan pernah menyimpan API key di dalam repo ini — key dibaca dari environment variable `__BYNARA_API_KEY`.
+   Never commit an API key to this repository — keys are read from the `__BYNARA_API_KEY` environment variable.
 
-## Pemakaian
+## Usage
 
-| Command | Fungsi |
+| Command | What it does |
 |---|---|
-| `/bynara-image <prompt>` | Generate gambar dari teks |
-| `/bynara-image-edit <gambar> <instruksi>` | Edit gambar yang ada |
-| `/bynara-video <prompt>` | Generate video dari teks (selesai dalam 1–5 menit) |
-| `/bynara-video-animate <gambar> [gambar2 gambar3] <prompt>` | Animasikan 1 gambar (jadi frame pertama) atau gabungkan 1–3 gambar referensi jadi scene baru |
+| `/bynara-image <prompt>` | Generate an image from a text prompt |
+| `/bynara-image-edit <image> <instruction>` | Edit an existing image |
+| `/bynara-video <prompt>` | Generate a video from a text prompt (takes 1–5 minutes) |
+| `/bynara-video-animate <image> [image2 image3] <prompt>` | Animate a single image (becomes the first frame) or merge 1–3 reference images into a new scene |
 
-Skill `bynara-image-generate` dan `bynara-video-generate` juga terpicu otomatis dari prompt bahasa natural (mis. "buatkan gambar...", "animasikan foto ini jadi video...").
+The `bynara-image-generate` and `bynara-video-generate` skills also trigger automatically from natural-language prompts (e.g. "draw me...", "turn this photo into a video...").
 
-## Catatan
+## Notes
 
-- Semua request dibayar per pemakaian di akun Bynara Anda.
-- Video: durasi 3–15 detik (billed per detik; 720p Rp100/detik, 1080p Rp250/detik). Hasil diunduh otomatis ke disk karena file di server expire 3 jam.
-- Gambar: hasil diterima sebagai base64 dan disimpan ke folder `generated-images/`; video ke `generated-videos/`.
+- Every request is billed per use on your Bynara account.
+- Videos: 3–15 seconds long (billed per second; 720p Rp100/sec, 1080p Rp250/sec). Results are downloaded to disk automatically because server-side files expire after 3 hours.
+- Images: results arrive as base64 and are saved to `generated-images/`; videos go to `generated-videos/`.
