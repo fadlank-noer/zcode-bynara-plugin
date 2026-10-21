@@ -1,0 +1,19 @@
+{
+  "name": "zcode-bynara-plugin",
+  "plugins": [
+    {
+      "name": "bynara-image-generate",
+      "source": "./bynara-image-generate",
+      "version": "0.1.2",
+      "description": "Generate new images from a text prompt and edit existing images via the Bynara Images API (api-images.bynara.id)",
+      "displayName": "Bynara Image Generate"
+    },
+    {
+      "name": "bynara-video-generate",
+      "source": "./bynara-video-generate",
+      "version": "0.1.0",
+      "description": "Generate short MP4 videos from a text prompt or animate images (t2v, i2v, r2v) via the Bynara Videos API (api-images.bynara.id)",
+      "displayName": "Bynara Video Generate"
+    }
+  ]
+}

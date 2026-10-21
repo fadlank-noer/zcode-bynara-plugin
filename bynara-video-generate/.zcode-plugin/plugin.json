@@ -1,0 +1,10 @@
+{
+  "name": "bynara-video-generate",
+  "version": "0.1.0",
+  "description": "Generate short MP4 videos from a text prompt or animate images (t2v, i2v, r2v) via the Bynara Videos API (api-images.bynara.id)",
+  "author": {
+    "name": "bynara"
+  },
+  "skills": "./skills",
+  "commands": "./commands"
+}
