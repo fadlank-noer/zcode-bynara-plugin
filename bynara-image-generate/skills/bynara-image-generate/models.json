@@ -1,0 +1,46 @@
+{
+  "updated": "2026-11-03",
+  "api_base_url": "https://api-images.bynara.id",
+  "credit_note": "Pay per image in credits (1 credit = Rp1). Quality tier does not change the price within a model.",
+  "default_model": "gpt-image-2",
+  "notes": [
+    "Verified against the API on 2026-11-03. The older agnes-image-2.0-flash and agnes-image-2.1-flash models were removed from the API.",
+    "4K sizes (4096x4096, 6144x4096, 4096x6144) are no longer offered on any model; the API rejects them with \"Invalid image size.\"",
+    "The API rejects shorthand tiers like \"1K\" or \"2K\" as the size value with \"Invalid image size.\" - always send explicit pixel dimensions from the sizes arrays."
+  ],
+  "models": [
+    {
+      "id": "gpt-image-2",
+      "display_name": "GPT Image 2",
+      "is_default": true,
+      "routing_hints": ["murah", "standar", "hemat"],
+      "price_per_image_credits": { "1K": 500, "2K": 500, "4K": null },
+      "sizes": {
+        "1K": ["1024x1024", "1536x1024", "1024x1536"],
+        "2K": ["2048x2048", "3072x2048", "2048x3072"]
+      }
+    },
+    {
+      "id": "gpt-image-2.5-flare",
+      "display_name": "GPT Image 2.5 Flare",
+      "is_default": false,
+      "routing_hints": ["kualitas terbaik", "terbaru", "model 2.5", "flare"],
+      "price_per_image_credits": { "1K": 1000, "2K": 1000, "4K": null },
+      "sizes": {
+        "1K": ["1024x1024", "1536x1024", "1024x1536"],
+        "2K": ["2048x2048", "3072x2048", "2048x3072"]
+      }
+    },
+    {
+      "id": "gpt-image-2.5-sunburst",
+      "display_name": "GPT Image 2.5 Sunburst",
+      "is_default": false,
+      "routing_hints": ["kualitas terbaik", "terbaru", "model 2.5", "sunburst"],
+      "price_per_image_credits": { "1K": 1000, "2K": 1000, "4K": null },
+      "sizes": {
+        "1K": ["1024x1024", "1536x1024", "1024x1536"],
+        "2K": ["2048x2048", "3072x2048", "2048x3072"]
+      }
+    }
+  ]
+}

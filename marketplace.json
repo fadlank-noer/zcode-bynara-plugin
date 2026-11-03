@@ -4,7 +4,7 @@
     {
       "name": "bynara-image-generate",
       "source": "./bynara-image-generate",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "description": "Generate new images from a text prompt and edit existing images via the Bynara Images API (api-images.bynara.id)",
       "displayName": "Bynara Image Generate"
     },

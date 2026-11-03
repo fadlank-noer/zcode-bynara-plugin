@@ -20,28 +20,24 @@ Always request `response_format: "b64_json"` so you receive the image as base64 
 curl -sS -m 300 -X POST https://api-images.bynara.id/v1/images/generations \
   -H "Authorization: Bearer $__BYNARA_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"model": "agnes-image-2.1-flash", "size": "1024x1024", "prompt": "<the prompt>", "response_format": "b64_json"}' \
+  -d '{"model": "gpt-image-2", "size": "1024x1024", "prompt": "<the prompt>", "response_format": "b64_json"}' \
   > /tmp/gen_result.json
 ```
 
-## Models and sizes
+## Models and sizes — read models.json first
 
-Only these models exist on the Bynara Images API. Default to `agnes-image-2.1-flash` unless the user asks for something else.
+The authoritative model list — ids, supported sizes, per-image prices, and the current default — lives in **`models.json`** in this skill's directory (same folder as this SKILL.md). **Read it before generating** and drive every request from it: use `default_model` unless the user's wording matches another model's `routing_hints`, and take sizes and prices only from that file. When several models match and the user named one explicitly, use the named one; otherwise use `default_model`.
 
-| model | supported sizes | notes |
-|---|---|---|
-| `agnes-image-2.0-flash` | `1024x1024`, `1536x1024`, `1024x1536`, `2048x2048`, `3072x2048`, `2048x3072`, `4096x4096`, `6144x4096`, `4096x6144` | cheapest flash tier |
-| `agnes-image-2.1-flash` | `1024x1024`, `1536x1024`, `1024x1536`, `2048x2048`, `3072x2048`, `2048x3072`, `4096x4096`, `6144x4096`, `4096x6144` | newest flash — default |
-| `gpt-image-2` | `1024x1024`, `1536x1024`, `1024x1536`, `2048x2048`, `3072x2048`, `2048x3072`, `4096x4096`, `6144x4096`, `4096x6144` | flat pricing at every size — use when the user wants the highest quality |
+Rules that apply regardless of what the JSON contains:
 
-**Important:** Do NOT use shorthand sizes like `1K`, `2K`, or `4K` — the API rejects them with `"Invalid image size."`. Always use explicit pixel dimensions (see table above). Default to `1024x1024` (square). Use landscape/portrait ratios when the user's prompt implies one.
+- Do NOT send shorthand tiers like `1K`, `2K`, or `4K` as `"size"` — the API rejects them with `"Invalid image size."`. Always use explicit pixel dimensions from the JSON's `sizes` arrays. Default to `1024x1024` (square); use landscape/portrait ratios when the user's prompt implies one.
+- If the user names a model that is not in the JSON (e.g. a removed `agnes-image-*` model), do not send it — tell the user which models the JSON lists instead.
+- If `models.json` is missing or unreadable, fall back to `gpt-image-2` at `1024x1024` and tell the user the model list could not be loaded, so it may be out of date.
 
-Pick the model from the user's wording: "cepat/murah" → a `flash` model; "kualitas tertinggi/terbaik" → `gpt-image-2`; "4K/resolusi tinggi" → any model with a `4096x…` or `6144x…` size. If the user names a model not in this table, tell them which models are available instead of sending it.
-
-Include `"model"` in the request body whenever known; the default request becomes:
+The default request body (check `default_model` in `models.json` for the current default):
 
 ```json
-{"model": "agnes-image-2.1-flash", "size": "1024x1024", "prompt": "<the prompt>", "response_format": "b64_json"}
+{"model": "gpt-image-2", "size": "1024x1024", "prompt": "<the prompt>", "response_format": "b64_json"}
 ```
 
 Other optional JSON fields (include only when the user asks): `"n": 2`. Do not include `"response_format"` explicitly — `b64_json` is the default strategy because URL-based downloads fail on this API.
@@ -57,14 +53,15 @@ curl -sS -m 300 -X POST https://api-images.bynara.id/v1/images/edits \
   -F "prompt=<the edit instruction>"
 ```
 
-For multiple input images use repeated `-F "image=@..."` fields. Add `-F "model=..."` (same model table as above) when the user specifies a model or quality tier. If the endpoint rejects multipart with a content-type error, retry with JSON: `-H "Content-Type: application/json"` and `-d '{"model": "...", "image": "<base64 of file>", "prompt": "..."}'` (encode with `base64 -w0 < file`).
+For multiple input images use repeated `-F "image=@..."` fields. Add `-F "model=..."` (a model id from `models.json`) when the user specifies a model or quality tier. If the endpoint rejects multipart with a content-type error, retry with JSON: `-H "Content-Type: application/json"` and `-d '{"model": "...", "image": "<base64 of file>", "prompt": "..."}'` (encode with `base64 -w0 < file`).
 
 ## 3. Handle the response and save the image(s)
 
 Always save results to disk so the user can view them.
 
-1. **Save the raw curl output first** to a temp file (e.g. `/tmp/gen_result.json` or `/tmp/gen_result_N.json`). The base64 string can be very long and piping it directly may truncate or corrupt it.
-2. **Decode the base64** into the final image file. Use whichever tool is available in the environment:
+1. **Save the raw curl output first** to a temp file (e.g. `/tmp/gen_result.json` or `/tmp/gen_result_N.json`). The base64 string can be very long and piping it directly may truncate or corrupt it. On Windows, curl may also report exit code 56 ("schannel: server closed abruptly") while still writing a usable body — judge by the file contents, not the exit code.
+2. **Validate the JSON before decoding** (`JSON.parse` or `python -c "import json;json.load(open('gen_result.json'))"`). **Known API issue (observed 2026-11-03):** the server currently aborts large `b64_json` responses mid-body (~64 KB delivered of ~2 MB), leaving truncated JSON. If parsing fails, delete the file and retry the same request (up to 3 attempts, `sleep 15` between). If every attempt truncates, stop and tell the user the API is truncating responses right now (a server-side issue) instead of retrying further or falling back to the `url` field — the `url` field is a relative path that returns 404 when downloaded.
+3. **Decode the base64** into the final image file. Use whichever tool is available in the environment:
    - **Node.js** (reliable cross-platform):
      ```bash
      node -e "
@@ -85,11 +82,11 @@ Always save results to disk so the user can view them.
          out.write(buf)
      print(f'Saved {len(buf)} bytes')
      ```
-3. Create an output directory in the current workspace, e.g. `generated-images/`.
-4. Name files descriptively from the prompt (slugified, e.g. `red-apple-on-snow.png`); add `-2`, `-3` suffixes when `n > 1`.
-5. Clean up temp files after decoding.
+4. Create an output directory in the current workspace, e.g. `generated-images/`.
+5. Name files descriptively from the prompt (slugified, e.g. `red-apple-on-snow.png`); add `-2`, `-3` suffixes when `n > 1`.
+6. Clean up temp files after decoding.
 
-**Do not attempt to download via the `url` field** — it is a relative path that returns 404 when accessed directly. The base64 route is the only reliable method.
+**Do not attempt to download via the `url` field** — it is a relative path that returns 404 when accessed directly (all known download-path variants return 404). The base64 route, with the retry procedure above, is the only workable method.
 
 ## 4. Report and handle errors
 
